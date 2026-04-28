@@ -1,0 +1,11 @@
+node_modules/
+.env
+dist/
+build/
+.vscode/
+**/serviceAccountKey.json
+auth-service/config/serviceAccountKey.json
+patient-service/config/serviceAccountKey.json
+# Jitsi Docker runtime/generated files
+docker/jitsi/.env
+docker/jitsi/config/
