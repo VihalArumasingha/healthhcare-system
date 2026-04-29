@@ -21,6 +21,28 @@ export default function BookingPage() {
 
   const handleSubmit = async () => {
     try {
+      // ✅ Validate all fields first
+      if (!form.name.trim()) {
+        alert("Please enter your name");
+        return;
+      }
+      if (!form.age || form.age <= 0) {
+        alert("Please enter a valid age");
+        return;
+      }
+      if (!form.email.trim()) {
+        alert("Please enter your email");
+        return;
+      }
+      if (!form.phone.trim()) {
+        alert("Please enter your phone number");
+        return;
+      }
+      if (!form.symptoms.trim()) {
+        alert("Please describe your symptoms");
+        return;
+      }
+
       // Check if user is authenticated
       if (!auth.currentUser) {
         alert("Please log in first to book an appointment");
@@ -56,7 +78,7 @@ export default function BookingPage() {
 
       const appointmentId = res.data._id;
 
-      // 2️⃣ Redirect to payment page
+      // 2️⃣ Redirect to payment page ONLY if successful
       navigate("/payment", {
         state: {
           appointmentId: appointmentId,
@@ -66,7 +88,14 @@ export default function BookingPage() {
 
     } catch (err) {
       console.error("Booking error:", err);
-      alert("Booking failed: " + (err.response?.data?.message || err.message));
+      
+      // Display the actual error message from backend
+      const errorMsg = err.response?.data?.error || 
+                       err.response?.data?.message || 
+                       err.message || 
+                       "Booking failed";
+      
+      alert(errorMsg);
     }
   };
 

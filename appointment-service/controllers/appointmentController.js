@@ -17,21 +17,37 @@ exports.createAppointment = async (req, res) => {
       name,
       age,
       symptoms,
-      email,   // 👈 add this from frontend
-      phone    // 👈 add this from frontend
+      email,
+      phone
     } = req.body;
 
+    // 🔹 Validate required fields
+    if (!doctorId || !date || !time || !name || !age || !email || !phone || !symptoms) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
     console.log("📝 Creating appointment with doctorId:", doctorId);
-    console.log("📝 Request body:", req.body);
+    console.log("📝 Requested slot - Date:", date, "(type:", typeof date + ")");
+    console.log("📝 Requested slot - Time:", time, "(type:", typeof time + ")");
+
+    // 🔹 FIRST: Try to book the slot (validates availability)
+    console.log("🔹 Attempting to book slot...");
+    try {
+      await axios.patch(`${DOCTOR_SERVICE_URL}/book-slot`, {
+        doctorId,
+        date,
+        time
+      });
+      console.log("✅ Slot booked successfully");
+    } catch (bookErr) {
+      const errorMsg = bookErr.response?.data?.message || bookErr.message;
+      console.error("❌ Failed to book slot:", errorMsg);
+      return res.status(bookErr.response?.status || 400).json({ 
+        error: errorMsg 
+      });
+    }
 
     const report = req.file ? req.file.filename : null;
-
-    // 🔹 Book doctor slot
-    await axios.patch(`${DOCTOR_SERVICE_URL}/book-slot`, {
-      doctorId,
-      date,
-      time
-    });
 
     // 🔹 Get Doctor Details
     let doctorEmail = null;
@@ -48,7 +64,7 @@ exports.createAppointment = async (req, res) => {
       console.error("Error fetching doctor details:", docErr.message);
     }
 
-    // 🔹 Save appointment
+    // 🔹 THEN: Save appointment (only if slot booking succeeded)
     const appointment = new Appointment({
       doctorId,
       patientId: req.user?.firebaseId || "patient123",

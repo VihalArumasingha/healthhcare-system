@@ -164,21 +164,58 @@ exports.bookSlot = async (req, res) => {
   try {
     const { doctorId, date, time } = req.body;
 
+    console.log("📝 Book Slot Request:");
+    console.log("   doctorId:", doctorId, "(type:", typeof doctorId + ")");
+    console.log("   date:", date, "(type:", typeof date + ")");
+    console.log("   time:", time, "(type:", typeof time + ")");
+
     const doctor = await Doctor.findById(doctorId);
 
-    const day = doctor.availability.find(d => d.date === date);
-    const slot = day?.slots.find(s => s.time === time);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
 
-    if (!slot) return res.status(404).json({ message: "Slot not found" });
-    if (slot.isBooked) return res.status(400).json({ message: "Already booked" });
+    console.log("📋 Doctor availability data:");
+    doctor.availability.forEach(day => {
+      console.log(`   - Date: "${day.date}"`);
+      day.slots.forEach(slot => {
+        console.log(`     - Time: "${slot.time}", isBooked: ${slot.isBooked}`);
+      });
+    });
+
+    const day = doctor.availability.find(d => {
+      console.log(`   Checking: "${d.date}" === "${date}" ? ${d.date === date}`);
+      return d.date === date;
+    });
+
+    if (!day) {
+      console.error("❌ Date not found in availability");
+      return res.status(404).json({ message: "Slot not found - date not available" });
+    }
+
+    const slot = day.slots.find(s => {
+      console.log(`   Checking time: "${s.time}" === "${time}" ? ${s.time === time}`);
+      return s.time === time;
+    });
+
+    if (!slot) {
+      console.error("❌ Time not found for this date");
+      return res.status(404).json({ message: "Slot not found - time not available" });
+    }
+
+    if (slot.isBooked) {
+      console.error("❌ Slot already booked");
+      return res.status(400).json({ message: "Already booked" });
+    }
 
     slot.isBooked = true;
-
     await doctor.save();
 
+    console.log("✅ Slot booked successfully");
     res.json({ message: "Slot booked successfully" });
 
   } catch (err) {
+    console.error("❌ Book slot error:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
