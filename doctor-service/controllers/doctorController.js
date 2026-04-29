@@ -4,9 +4,14 @@ const Doctor = require("../models/Doctor");
 // 🔹 Create Doctor Profile (AFTER Firebase register)
 exports.createDoctorProfile = async (req, res) => {
   try {
+    console.log("🔹 Creating doctor profile...");
+    console.log("   User UID:", req.user.uid);
+    console.log("   Request body:", req.body);
+
     const existing = await Doctor.findOne({ firebaseId: req.user.uid });
 
     if (existing) {
+      console.log("⚠️ Doctor already exists for UID:", req.user.uid);
       return res.status(400).json({ message: "Profile exists" });
     }
 
@@ -15,11 +20,16 @@ exports.createDoctorProfile = async (req, res) => {
       ...req.body
     });
 
-    await doctor.save();
+    console.log("📝 Doctor object created, saving to database...");
+    const savedDoctor = await doctor.save();
+    console.log("✅ Doctor saved successfully!");
+    console.log("   Saved doctor ID:", savedDoctor._id);
+    console.log("   Saved doctor:", savedDoctor);
 
-    res.json(doctor);
+    res.json(savedDoctor);
 
   } catch (err) {
+    console.error("❌ Error creating doctor profile:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -27,8 +37,18 @@ exports.createDoctorProfile = async (req, res) => {
 
 // 🔹 Get all doctors (public)
 exports.getDoctors = async (req, res) => {
-  const doctors = await Doctor.find();
-  res.json(doctors);
+  try {
+    console.log("📋 Fetching all doctors from database...");
+    const doctors = await Doctor.find();
+    console.log(`✅ Found ${doctors.length} doctors`);
+    doctors.forEach((doc, i) => {
+      console.log(`   ${i + 1}. ${doc.name} (ID: ${doc._id})`);
+    });
+    res.json(doctors);
+  } catch (err) {
+    console.error("❌ Error fetching doctors:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 
