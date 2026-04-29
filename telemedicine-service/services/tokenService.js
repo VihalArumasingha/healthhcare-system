@@ -74,17 +74,20 @@ const generateJitsiToken = ({ channelName, uid, role = "guest", expireInSeconds 
   const exp = now + Number(expireInSeconds);
 
   const normalizedRoom = normalizeJitsiRoomName(channelName);
+  const userDisplayName = String(uid || "guest");
 
   const payload = {
     aud: "jitsi",
     iss: appId,
     sub: domain,
     room: normalizedRoom,
+    name: userDisplayName,
     exp,
     nbf: now,
     context: {
       user: {
-        id: String(uid || "guest"),
+        id: userDisplayName,
+        name: userDisplayName,
         moderator: role === "host"
       }
     }
@@ -95,7 +98,7 @@ const generateJitsiToken = ({ channelName, uid, role = "guest", expireInSeconds 
     channelName: normalizedRoom,
     appId,
     domain,
-    uid: String(uid || "guest"),
+    uid: userDisplayName,
     expiresAt: exp
   };
 };
