@@ -3,6 +3,7 @@ import axios from 'axios';
 import { subscribeToAuthChanges } from '../../auth/services/authService';
 import { toast } from 'react-toastify';
 import { User, Phone, MapPin, Droplets, Calendar, Mail, Save, Edit3, UserCheck, HeartPulse, AlertTriangle, FileText, Contact, Plus, Trash2 } from 'lucide-react';
+import patientProfileApi from '../services/patientProfileApi';
 
 const PatientProfile = () => {
   const [user, setUser] = useState(null);
@@ -53,7 +54,7 @@ const PatientProfile = () => {
     try {
       console.log("Fetching profile for UID:", uid);
       // 1. Fetch Medical info
-      const resMedical = await axios.get(`${import.meta.env.VITE_PATIENT_API}/profile`, {
+      const resMedical = await patientProfileApi.get(`/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -131,7 +132,7 @@ const PatientProfile = () => {
 
       console.log("Sending payload:", payload);
 
-      const response = await axios.put(`${import.meta.env.VITE_PATIENT_API}/profile`, payload, {
+      const response = await patientProfileApi.put(`/profile`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -171,7 +172,7 @@ const PatientProfile = () => {
         emergencyContact: profile.emergencyContact
       };
       
-      const response = await axios.post(`${import.meta.env.VITE_PATIENT_API}/profile/create`, payload, {
+      const response = await patientProfileApi.post(`/profile/create`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -226,7 +227,7 @@ const PatientProfile = () => {
 
     try {
       const token = await user.getIdToken();
-      const response = await axios.post(`${import.meta.env.VITE_PATIENT_API}/profile/image`, formData, {
+      const response = await patientProfileApi.post(`/profile/image`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'

@@ -22,7 +22,7 @@ export default function MyAppointments() {
         setLoading(true);
 
         const [appointmentsResponse, sessions] = await Promise.all([
-          patientApi.get("/appointments/patient/me"),
+          patientApi.get("/patient/me"),
           listSessions({ patientId })
         ]);
 
